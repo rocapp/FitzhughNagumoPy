@@ -2,6 +2,7 @@
 # Robert Capps, Georgia State University, 2014
 
 from scipy.integrate import odeint; 
+import scipy as sp
 from numpy import arange;
 from pylab import figure
 from pylab import show
@@ -26,20 +27,20 @@ def fitznag(state,t):
   B = 0.7
   C = 0.8
   Iapp = 1.2
- # Isyn = Iapp*-0.13*(v-v2)
+
 
   # compute state derivatives
   vd = v - power(v, 3)/3 - w + Iapp
   wd = A*(v + B - C*w)
   
-  v2d = (v2 - power(v2, 3)/3 - w2) + Iapp - (0.02*(v))
+  v2d = (v2 - power(v2, 3)/3 - w2) + Iapp - (0.03*(v))
   w2d = (A*(v2 + B - C*w2))
 
   # return the state derivatives
   return [vd, wd, v2d, w2d]
 
 state0 = [0, 0, 0, 0]
-t = arange(0.0, 1500.0, 0.01)
+t = arange(0.0, 2800.0, 0.01)
 
 state = odeint(fitznag, state0, t)
 
@@ -53,12 +54,14 @@ v_2 = np.around(state[:,2],7)
 np.savetxt('v_1.txt', v_1)
 np.savetxt('v_2.txt', v_2)
 
+
+
 # Find the times when Cell 1 spikes
-    #pks = np.amax(v_1[0:1500000:1])
-locs = np.where((v_1 >= 1.800042300000000095e+00) & (v_1 <= 1.8005))
+locs = (np.diff(np.sign(np.diff(v_1))) < 0).nonzero()[0] +1
+
 # Find the times when Cell 2 spikes
-    #pks2 = np.amax(v_2[90:100:1])
-locs2 = np.where((v_2 >= 1.800042300000000095e+00) & (v_2 <= 1.8005) )
+locs2 = (np.diff(np.sign(np.diff(v_2))) < 0).nonzero()[0] +1
+
 
 floc2 = np.transpose(locs2[0:len(locs)])
 floc1 = np.transpose(locs[0:len(locs)])
@@ -81,24 +84,33 @@ np.savetxt('floc1.txt', floc1)
 np.savetxt('floc2.txt', floc2)
 
 # Tau
-tau = abs(floc2f - floc1f)
+tau = np.around(abs(floc2f - floc1f),decimals=3)
 np.savetxt('Tau.txt', tau)
 
 # Period
-
-even, odd = floc1f[::2], floc1f[1::2]
-period = np.transpose(abs(even - odd))
-#period = np.array([abs(i-j) for i, j in zip(floc1f[0][0::2], floc1f[0][1::2])])
+even, odd = floc1f[0::2], floc1f[1::2]
+if len(even) > len(odd):
+    evenf = even.copy()
+    evenf.resize(len(odd),1)
+    oddf = odd
+    print('That is odd!')
+if len(odd) > len(even):
+    oddf = odd.copy()
+    oddf.resize(len(even),1)
+    evenf = even
+    print('Nah, it is even!')
+period = np.transpose(np.around(abs(evenf - oddf),decimals=3))
 np.savetxt('Period.txt', period)
 
-tausize = len(tau)
-periodf = period.copy()
-periodf.resize(1,tausize)
-# Find the Phase lag
+# resize our period
+periodsize = len(np.transpose(period))
+tauf = tau.copy()
+tauf.resize(1,periodsize)
 
-Phi12 = ((tau)/(periodf))
-Phif = np.transpose(Phi12)
-n = arange(0.0,len(np.transpose(Phi12)),1)
+# Find the Phase lag
+Phi12 = np.true_divide((tauf),(period))
+Phif = np.transpose(Phi12) % 1
+n = arange(0,len(Phif),1)
 np.savetxt('Phi.txt', Phi12)
 
 # Voltage, Slow Variable Plots
@@ -112,21 +124,20 @@ plt.savefig('fig1.png')
 fig2 = figure()
 plt.plot(t,state[:,0])
 plt.plot(t,state[:,2])
-plt.axis([1350, 1500, -2, 2.5])
+plt.axis([0, 1500, -2, 2.5])
 plt.legend(handles=[green, blue])
 plt.savefig('fig2.png')
 
 fig3 = figure()
 plt.plot(t,state[:,1])
 plt.plot(t,state[:,3])
-plt.axis([0, 1500, -2, 2.5])
+plt.axis([0, 1500, 0, 2.5])
 plt.legend(handles=[green, blue])
 plt.savefig('fig3.png')
 
+# Phase plot
 fig4 = figure()
 plt.plot(n,Phif)
 plt.autoscale(enable=True,tight=True)
-
-# Phase Plot
-print("The final phase lag is " +repr(Phif))
+plt.savefig('fig4.png')
 show()
