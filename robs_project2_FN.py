@@ -50,43 +50,54 @@ state = odeint(fitznag, state0, t)
 v_1 = np.around(state[:,0],7)
 v_2 = np.around(state[:,2],7)
 
+np.savetxt('v_1.txt', v_1)
+np.savetxt('v_2.txt', v_2)
+
 # Find the times when Cell 1 spikes
     #pks = np.amax(v_1[0:1500000:1])
-locs = np.argwhere(v_1 > 1.95)
+locs = np.where((v_1 >= 1.800042300000000095e+00) & (v_1 <= 1.8005))
 # Find the times when Cell 2 spikes
     #pks2 = np.amax(v_2[90:100:1])
-locs2 = np.argwhere(v_2 > 1.95)
+locs2 = np.where((v_2 >= 1.800042300000000095e+00) & (v_2 <= 1.8005) )
 
+floc2 = np.transpose(locs2[0:len(locs)])
+floc1 = np.transpose(locs[0:len(locs)])
 
+floc2L = len(floc2)
+floc1L = len(floc1)
 
 # Find where the last useful spike occurs
-if len(locs2) > len(locs):
-    floc2 = np.transpose(locs2[0:len(locs)])
-    floc1 = np.transpose(locs[0:len(locs2)])
+if floc2L > floc1L:
+    print('changed!')
+    floc2f = floc2.copy()
+    floc2f.resize(floc1L,1)
+    floc1f = floc1
 else:
-    floc1 = np.transpose(locs[0:len(locs2)])
-    floc2 = np.transpose(locs2[0:len(locs2)])
+        print('changed!!')
+        floc1f = floc1.copy()
+        floc1f.resize(floc2L,1)
+        floc2f = floc2
 np.savetxt('floc1.txt', floc1)
 np.savetxt('floc2.txt', floc2)
 
-floc1t = np.transpose(floc1)
-floc2t = np.transpose(floc2)
-
 # Tau
-tau = abs(floc2 - floc1)
+tau = abs(floc2f - floc1f)
 np.savetxt('Tau.txt', tau)
 
 # Period
-period = np.transpose([abs(i-j) for i, j in zip(floc1[0][0::2], floc1[0][1::2])])
+
+even, odd = floc1f[::2], floc1f[1::2]
+period = np.transpose(abs(even - odd))
+#period = np.array([abs(i-j) for i, j in zip(floc1f[0][0::2], floc1f[0][1::2])])
 np.savetxt('Period.txt', period)
 
-tausize = len(np.transpose(tau))
+tausize = len(tau)
 periodf = period.copy()
 periodf.resize(1,tausize)
 # Find the Phase lag
 
 Phi12 = ((tau)/(periodf))
-Phif = np.mod(np.transpose(Phi12),1)
+Phif = np.transpose(Phi12)
 n = arange(0.0,len(np.transpose(Phi12)),1)
 np.savetxt('Phi.txt', Phi12)
 
@@ -108,7 +119,7 @@ plt.savefig('fig2.png')
 fig3 = figure()
 plt.plot(t,state[:,1])
 plt.plot(t,state[:,3])
-plt.axis([0, 1500, 0, 2.5])
+plt.axis([0, 1500, -2, 2.5])
 plt.legend(handles=[green, blue])
 plt.savefig('fig3.png')
 
@@ -117,5 +128,5 @@ plt.plot(n,Phif)
 plt.autoscale(enable=True,tight=True)
 
 # Phase Plot
-print("The final phase lag is " +repr(Phif[0]))
+print("The final phase lag is " +repr(Phif))
 show()
