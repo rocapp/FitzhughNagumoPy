@@ -1,4 +1,4 @@
-# 2-Cell coupled inhibitory Fitzhugh-Nagumo model
+# 3-Cell coupled inhibitory Fitzhugh-Nagumo model
 # Robert Capps, Georgia State University, 2014
 
 from scipy.integrate import odeint; 
@@ -58,8 +58,6 @@ v_2 = np.around(state[:,2],7)
 
 np.savetxt('v_1.txt', v_1)
 np.savetxt('v_2.txt', v_2)
-
-
 
 # Find the times when Cell 1 spikes
 locs = (np.diff(np.sign(np.diff(v_1))) < 0).nonzero()[0] +1
