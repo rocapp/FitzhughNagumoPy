@@ -31,9 +31,9 @@ def fitznag(state,t):
   gsyn = 0.1
   S = 0.01
   lam = 1.0155
-  # = gsyn*(-(v-Erev) * (1/(1+np.power(np.e,-k*(v2-theta)))) - (Erev/(1+np.power(np.e,(k*theta)))))
+
   Isyn = gsyn*((v-Erev)*S)/(1+np.power(np.e,(lam*(v2-theta)))) + 1/(1+np.power(np.e,(lam*(v2-theta))))
-  #print(Isyn)
+
   # here are our derivatives :-)
   vd = v - power(v, 3)/3 - w + Iapp + Isyn
   wd = A*(v + B - C*w)
