@@ -38,9 +38,6 @@ def fitznag(state,t):
  # Synaptic currents
   Isyn = gsyn*((v-Vs)*S)/(1+np.power(np.e,(lam*(v2-theta)))) 
   Isyn2 = gsyn*((v2-Vs)*S)/(1+np.power(np.e,(lam*(v-theta)))) 
-
-  
-  #print(Isyn)
   
   # here are our cells
   
@@ -70,20 +67,14 @@ state = odeint(fitznag, state0, t,rtol=1.49012e-13,atol=1.49012e-13)
 # Voltage vectors for cell 1 and 2
 v_1 = np.around(state[:,0],7)
 np.savetxt('v_1.txt', v_1)
-#shutil.copy('v_1.txt', 'peak detect')
 v_2 = np.around(state[:,2],7)
 np.savetxt('v_2.txt', v_2)
-#shutil.copy('v_2.txt', 'peak detect')
-
 # Find the times when Cell 1 spikes
-#locs = np.genfromtxt("max1.txt",delimiter=",")
 locs = (np.diff(np.sign(np.diff(v_1))) < 0).nonzero()[0]
 np.savetxt('locs.txt', locs)
 
 # Find the times when Cell 2 spikes
 locs2 = (np.diff(np.sign(np.diff(v_2))) < 0).nonzero()[0]
-#locs2 = np.genfromtxt("max2.txt",delimiter=",")
-
 
 floc2 = np.transpose(locs2[0:len(locs)])
 floc1 = np.transpose(locs[0:len(locs)])
@@ -107,7 +98,6 @@ np.savetxt('floc2.txt', floc2)
 
 # Tau
 tau = np.around(abs(floc2f - floc1f),decimals=7)
-#np.savetxt('Tau.txt', tau)
 
 # Period
 even, odd = floc1f[0::2], floc1f[1::2]
@@ -125,7 +115,6 @@ if len(odd) > len(even):
     evenf = even.copy()
     print('Nah, it is even!')
 period = np.transpose(np.around(abs(evenf - oddf),decimals=3))
-#np.savetxt('Period.txt', period)
 
 # resize our period
 periodsize = len(np.transpose(period))
@@ -137,7 +126,6 @@ Phi12 = np.true_divide((tauf),(period))
 n = arange(0,len(Phi12),1)
 Phif = np.transpose((np.arctan(Phi12))) % 1
 n = arange(0,len(Phif),1)
-#np.savetxt('Phi.txt', Phi12)
 
 # Voltage, Slow Variable Plots
 fig = figure()
@@ -153,7 +141,6 @@ fig2 = figure()
 plt.plot(t,state[:,0])
 plt.plot(t,state[:,2])
 plt.axis([2000, 2800, -3.7, 3.7])
-#plt.autoscale(enable=True,tight=True)
 plt.legend(handles=[green, blue])
 plt.xlabel('time (ms)')
 plt.ylabel('V')
@@ -177,7 +164,6 @@ plt.savefig('fig4.png')
 # Phase plot
 fig5 = figure()
 plt.plot(n,Phif)
-#plt.autoscale(enable=True,tight=True)
 plt.axis([0, len(n), 0, 0.52])
 plt.xlabel('Counted Oscillations (not total)')
 plt.ylabel('Phase difference, mod(1)')
